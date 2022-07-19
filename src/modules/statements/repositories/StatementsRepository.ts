@@ -1,6 +1,6 @@
 import { getRepository, Repository } from "typeorm";
 
-import { Statement } from "../entities/Statement";
+import { OperationType, Statement } from "../entities/Statement";
 import { ICreateStatementDTO } from "../useCases/createStatement/ICreateStatementDTO";
 import { IGetBalanceDTO } from "../useCases/getBalance/IGetBalanceDTO";
 import { IGetStatementOperationDTO } from "../useCases/getStatementOperation/IGetStatementOperationDTO";
@@ -29,7 +29,10 @@ export class StatementsRepository implements IStatementsRepository {
     return this.repository.save(statement);
   }
 
-  async findStatementOperation({ statement_id, user_id }: IGetStatementOperationDTO): Promise<Statement | undefined> {
+  async findStatementOperation({
+    statement_id,
+    user_id
+  }: IGetStatementOperationDTO): Promise<Statement | undefined> {
     return this.repository.findOne(statement_id, {
       where: { user_id }
     });
@@ -38,17 +41,18 @@ export class StatementsRepository implements IStatementsRepository {
   async getUserBalance({ user_id, with_statement = false }: IGetBalanceDTO):
     Promise<
       { balance: number } | { balance: number, statement: Statement[] }
-    >
-  {
+    > {
     const statement = await this.repository.find({
       where: { user_id }
     });
 
     const balance = statement.reduce((acc, operation) => {
-      if (operation.type === 'deposit') {
-        return acc + operation.amount;
+      const { type, amount } = operation;
+
+      if (type === OperationType.DEPOSIT || type === OperationType.TRANSFER) {
+        return acc + amount;
       } else {
-        return acc - operation.amount;
+        return acc - amount;
       }
     }, 0)
 

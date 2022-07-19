@@ -1,6 +1,7 @@
 import { AppError } from "../../../../shared/errors/AppError";
 import { InMemoryUsersRepository } from "../../../users/repositories/in-memory/InMemoryUsersRepository";
 import { CreateUserUseCase } from "../../../users/useCases/createUser/CreateUserUseCase";
+import { OperationType } from "../../entities/Statement";
 import { InMemoryStatementsRepository } from "../../repositories/in-memory/InMemoryStatementsRepository";
 import { CreateStatementUseCase } from "../createStatement/CreateStatementUseCase";
 import { GetBalanceUseCase } from "./GetBalanceUseCase";
@@ -18,22 +19,14 @@ describe('Get Balance', () => {
     password: 'john',
   }
 
-  enum OperationType {
-    DEPOSIT = 'deposit',
-    WITHDRAW = 'withdraw',
-  }
-
-  const depositType = 'deposit' as OperationType;
-  const withdrawType = 'withdraw' as OperationType;
-
   const depositMock = {
-    type: depositType,
+    type: OperationType.DEPOSIT,
     amount: 100,
     description: 'Deposit of 100',
   }
 
   const withdrawMock = {
-    type: withdrawType,
+    type: OperationType.WITHDRAW,
     amount: 50,
     description: 'Withdraw of 50',
   }
@@ -62,7 +55,7 @@ describe('Get Balance', () => {
 
     expect(deposit).toHaveProperty('id');
     expect(deposit.amount).toBe(100);
-    expect(deposit.type).toBe(depositType);
+    expect(deposit.type).toBe(OperationType.DEPOSIT);
 
     const withdraw = await createStatementUseCase.execute({
       ...withdrawMock,
@@ -71,7 +64,7 @@ describe('Get Balance', () => {
 
     expect(withdraw).toHaveProperty('id');
     expect(withdraw.amount).toBe(50);
-    expect(withdraw.type).toBe(withdrawType);
+    expect(withdraw.type).toBe(OperationType.WITHDRAW);
 
     const result = await getBalanceUseCase.execute({
       user_id: userCreated.id!,

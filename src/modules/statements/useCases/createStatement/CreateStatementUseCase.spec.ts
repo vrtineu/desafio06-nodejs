@@ -1,6 +1,7 @@
 import { AppError } from "../../../../shared/errors/AppError";
 import { InMemoryUsersRepository } from "../../../users/repositories/in-memory/InMemoryUsersRepository";
 import { CreateUserUseCase } from "../../../users/useCases/createUser/CreateUserUseCase";
+import { OperationType } from "../../entities/Statement";
 import { InMemoryStatementsRepository } from "../../repositories/in-memory/InMemoryStatementsRepository";
 import { CreateStatementUseCase } from "./CreateStatementUseCase";
 
@@ -10,28 +11,20 @@ let inMemoryStatementsRepository: InMemoryStatementsRepository;
 let createUserUseCase: CreateUserUseCase;
 
 describe('Create Statement', () => {
-  const user = {
+  const userMock = {
     name: 'John Doe',
     email: 'john@doe.com',
     password: 'john',
   }
 
-  enum OperationType {
-    DEPOSIT = 'deposit',
-    WITHDRAW = 'withdraw',
-  }
-
-  const depositType = 'deposit' as OperationType;
-  const withdrawType = 'withdraw' as OperationType;
-
   const depositMock = {
-    type: depositType,
+    type: OperationType.DEPOSIT,
     amount: 100,
     description: 'Deposit of 100',
   }
 
   const withdrawMock = {
-    type: withdrawType,
+    type: OperationType.WITHDRAW,
     amount: 50,
     description: 'Withdraw of 50',
   }
@@ -47,7 +40,7 @@ describe('Create Statement', () => {
   })
 
   it('should be able to create a deposit and withdraw statement', async () => {
-    const userCreated = await createUserUseCase.execute(user);
+    const userCreated = await createUserUseCase.execute(userMock);
 
     const deposit = await createStatementUseCase.execute({
       ...depositMock,
@@ -56,7 +49,7 @@ describe('Create Statement', () => {
 
     expect(deposit).toHaveProperty('id');
     expect(deposit.amount).toBe(100);
-    expect(deposit.type).toBe(depositType);
+    expect(deposit.type).toBe(OperationType.DEPOSIT);
 
     const withdraw = await createStatementUseCase.execute({
       ...withdrawMock,
@@ -65,7 +58,7 @@ describe('Create Statement', () => {
 
     expect(withdraw).toHaveProperty('id');
     expect(withdraw.amount).toBe(50);
-    expect(withdraw.type).toBe(withdrawType);
+    expect(withdraw.type).toBe(OperationType.WITHDRAW);
   })
 
   it('should not be able to create a statement with an invalid user id', async () => {
@@ -85,7 +78,7 @@ describe('Create Statement', () => {
   })
 
   it('should not be able to create a withdraw statement widt insufficient funds', async () => {
-    const userCreated = await createUserUseCase.execute(user);
+    const userCreated = await createUserUseCase.execute(userMock);
 
     const deposit = await createStatementUseCase.execute({
       ...depositMock,
@@ -94,7 +87,7 @@ describe('Create Statement', () => {
 
     expect(deposit).toHaveProperty('id');
     expect(deposit.amount).toBe(100);
-    expect(deposit.type).toBe(depositType);
+    expect(deposit.type).toBe(OperationType.DEPOSIT);
 
     expect(async () => {
       await createStatementUseCase.execute({

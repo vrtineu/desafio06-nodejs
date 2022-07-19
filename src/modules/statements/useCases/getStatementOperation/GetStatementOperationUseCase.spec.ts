@@ -1,7 +1,7 @@
 import { AppError } from "../../../../shared/errors/AppError";
 import { InMemoryUsersRepository } from "../../../users/repositories/in-memory/InMemoryUsersRepository";
 import { CreateUserUseCase } from "../../../users/useCases/createUser/CreateUserUseCase";
-import { Statement } from "../../entities/Statement";
+import { OperationType, Statement } from "../../entities/Statement";
 import { InMemoryStatementsRepository } from "../../repositories/in-memory/InMemoryStatementsRepository";
 import { CreateStatementUseCase } from "../createStatement/CreateStatementUseCase";
 import { GetStatementOperationUseCase } from "./GetStatementOperationUseCase";
@@ -19,15 +19,8 @@ describe('Get Statement', () => {
     password: 'john',
   }
 
-  enum OperationType {
-    DEPOSIT = 'deposit',
-    WITHDRAW = 'withdraw',
-  }
-
-  const depositType = 'deposit' as OperationType;
-
   const depositMock = {
-    type: depositType,
+    type: OperationType.DEPOSIT,
     amount: 100,
     description: 'Deposit of 100',
   }
@@ -62,7 +55,7 @@ describe('Get Statement', () => {
     expect(result).toBeInstanceOf(Statement);
     expect(result).toHaveProperty('id');
     expect(result.amount).toBe(100);
-    expect(result.type).toBe(depositType);
+    expect(result.type).toBe(OperationType.DEPOSIT);
   })
 
   it('should not be able to get a specific statement if the user does not exist', async () => {
